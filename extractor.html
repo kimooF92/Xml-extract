@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitemap Links</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>Sitemap Links</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>URL</th>
+                <th>Last Modified</th>
+            </tr>
+        </thead>
+        <tbody id="sitemap-links">
+            <!-- Links will be inserted here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+// Using a CORS proxy to avoid CORS issues
+const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+const sitemapUrl = 'https://www.nqmalay.shop/sitemap.xml';
+
+fetch(`${proxyUrl}${sitemapUrl}`, {
+    headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+    }
+})
+    .then(response => response.text())
+    .then(data => {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data, "application/xml");
+        const urls = xml.querySelectorAll("url");
+        let links = [];
+
+        urls.forEach(url => {
+            const loc = url.querySelector("loc").textContent;
+            const lastmod = url.querySelector("lastmod") ? url.querySelector("lastmod").textContent : "Unknown";
+            links.push({loc, lastmod});
+        });
+
+        // Sort links by last modified date
+        links.sort((a, b) => new Date(b.lastmod) - new Date(a.lastmod));
+
+        // Display links
+        const tbody = document.getElementById('sitemap-links');
+        links.forEach(link => {
+            const row = `<tr><td><a href="${link.loc}" target="_blank">${link.loc}</a></td><td>${link.lastmod}</td></tr>`;
+            tbody.innerHTML += row;
+        });
+    })
+    .catch(error => console.error('Error fetching or parsing the sitemap:', error));
+</script>
+
+</body>
+</html>
