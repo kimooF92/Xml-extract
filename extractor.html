@@ -9,30 +9,44 @@
 <body>
 
 <div class="container mt-5">
-    <h2>Sitemap Links</h2>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>URL</th>
-                <th>Last Modified</th>
-            </tr>
-        </thead>
-        <tbody id="sitemap-links">
-            <!-- Links will be inserted here -->
-        </tbody>
-    </table>
+    <h2>Enter Sitemap URL</h2>
+    <form id="sitemapForm">
+        <div class="form-group">
+            <input type="url" id="sitemapUrl" class="form-control" placeholder="Enter sitemap URL" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Fetch Sitemap</button>
+    </form>
+
+    <div class="mt-5">
+        <h3>Sitemap Links</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>URL</th>
+                    <th>Last Modified</th>
+                </tr>
+            </thead>
+            <tbody id="sitemap-links">
+                <!-- Links will be inserted here -->
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-// Using a CORS proxy to avoid CORS issues
-const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-const sitemapUrl = 'https://www.nqmalay.shop/sitemap.xml';
+document.getElementById('sitemapForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent the default form submission
+    const sitemapUrl = document.getElementById('sitemapUrl').value;
+    if (!sitemapUrl) return; // Exit if the URL is empty
 
-fetch(`${proxyUrl}${sitemapUrl}`, {
-    headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-    }
-})
+    // Using a CORS proxy to avoid CORS issues
+    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+
+    fetch(`${proxyUrl}${sitemapUrl}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
     .then(response => response.text())
     .then(data => {
         const parser = new DOMParser();
@@ -51,12 +65,17 @@ fetch(`${proxyUrl}${sitemapUrl}`, {
 
         // Display links
         const tbody = document.getElementById('sitemap-links');
+        tbody.innerHTML = ''; // Clear previous entries
         links.forEach(link => {
             const row = `<tr><td><a href="${link.loc}" target="_blank">${link.loc}</a></td><td>${link.lastmod}</td></tr>`;
             tbody.innerHTML += row;
         });
     })
-    .catch(error => console.error('Error fetching or parsing the sitemap:', error));
+    .catch(error => {
+        console.error('Error fetching or parsing the sitemap:', error);
+        alert('Failed to fetch the sitemap. Please check the URL and try again.');
+    });
+});
 </script>
 
 </body>
